@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>esp32_diffdrive_robot_bringup</name>
+  <version>0.0.0</version>
+  <description>ESP32 based diffdrive robot bringup package</description>
+
+  <maintainer email="l15@kcir.pwr.edu.pl">
+    Autonomous Robot Lab L1.5 on WUST Department of Cybernetics and Robotics
+  </maintainer>
+
+  <license>Apache License 2.0</license>
+
+  <author email="delicat.kuba@gmail.com">Jakub Delicat</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>micro_ros_agent</exec_depend>
+  <exec_depend>microros_hardware_interfaces</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
