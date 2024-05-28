@@ -16,8 +16,13 @@ Open VS Code in `firmware` folder wait for PlatformIO initialization and `Upload
 To build workspace install [ROS humble on Ubuntu 22.04](https://docs.ros.org/en/humble/Installation.html), then:
 
 ```bash
-vcs import . < dependencies.repos
-rosdep install --from-paths . --ignore-src -r -y
+mkdir esp32bot_ws
+cd esp32bot_ws
+
+git clone https://github.com/wust-dcr/esp32_diffdrive_robot.git src
+
+vcs import src < src/dependencies.repos
+rosdep install --from-paths src --ignore-src -r -y
 
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 ```
@@ -28,8 +33,8 @@ This example uses `ROS_DOMAIN_ID=0` remember:
 ```bash
 source install/setup.bash
 
-exoport ROS_DOMAIN_ID=0
-ros2 launch esp32_diffdrive_robot_bringup/launch/microros.launch.py  serial_port:=/dev/ttyUSB0 serial_baudrate:=115200
+export ROS_DOMAIN_ID=0
+ros2 launch esp32_diffdrive_robot_bringup microros.launch.py  serial_port:=/dev/ttyUSB0 serial_baudrate:=115200
 ```
 
 The `diff_drive_controller` should activate correctly. Now you can drive the robot using `teleop_twist_keyboard`:

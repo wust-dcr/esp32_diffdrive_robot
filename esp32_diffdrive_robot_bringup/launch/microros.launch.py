@@ -55,6 +55,12 @@ def generate_launch_description():
 
     robot_description = {"robot_description": robot_description_content}
 
+    robot_state_pub_node = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        parameters=[robot_description],
+    )
+
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("esp32_diffdrive_robot_bringup"),
@@ -66,9 +72,12 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_description, robot_controllers],
+        parameters=[robot_controllers],
         emulate_tty=True,
-        remappings=[("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel")],
+        remappings=[
+            ("/diff_drive_controller/cmd_vel_unstamped", "/cmd_vel"),
+            ("/controller_manager/robot_description", "/robot_description"),
+        ],
     )
 
     joint_state_broadcaster_spawner = Node(
@@ -105,6 +114,7 @@ def generate_launch_description():
             declare_serial_port_arg,
             declare_serial_baudrate_arg,
             microros_agent_node,
+            robot_state_pub_node,
             control_node,
             joint_state_broadcaster_spawner,
             delay_diff_drive_controller_spawner_after_joint_state_broadcaster_spawner,

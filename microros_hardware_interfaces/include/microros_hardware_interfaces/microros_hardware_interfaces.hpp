@@ -25,13 +25,13 @@
 
 #include "hardware_interface/handle.hpp"
 #include "hardware_interface/hardware_info.hpp"
+#include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
 #include "microros_hardware_interfaces/visibility_control.h"
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "std_msgs/msg/float32_multi_array.hpp"
-
 namespace microros_hardware_interfaces
 {
 class MicroROSHArdwareInterfaces : public hardware_interface::SystemInterface
@@ -65,9 +65,13 @@ private:
   std::vector<double> hw_commands_;
   std::vector<double> hw_states_;
 
-  std_msgs::msg::Float32MultiArray latest_wheel_state_;
-  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr wheel_state_sub_;
-  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr wheel_command_pub_;
+  uint32_t encoders_cpr = 1;
+
+  std_msgs::msg::Float32MultiArray latest_wheel_position_state_;
+  std_msgs::msg::Float32MultiArray latest_wheel_velocity_state_;
+  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr wheel_position_state_sub_;
+  rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr wheel_velocity_state_sub_;
+  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr wheel_velocity_command_pub_;
   rclcpp::Node::SharedPtr node_;
 };
 
