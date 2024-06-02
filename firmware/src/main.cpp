@@ -150,49 +150,64 @@ void IRAM_ATTR encoder_right_interrupt()
 void control_tick(TimerHandle_t xTimer)
 {
   const float dt_s = control_loop_period * 0.001;
-  // float left_encoder_tick_per_s = (last_left_encoder_ticks - left_encoder_ticks)/((float)control_loop_period);
   float motor_commands_received_values[MOTORS_COUNT];
-  // int32_t right_encoder_tick_diff = (last_right_encoder_ticks - right_encoder_ticks) * 2;
-  int32_t right_encoder_tick_diff = 0;
+
+  int32_t right_encoder_tick_diff = right_encoder_ticks - last_right_encoder_ticks;
   int32_t left_encoder_tick_diff = left_encoder_ticks - last_left_encoder_ticks;
 
   float left_encoder_tick_per_sec = (float)(left_encoder_tick_diff) / dt_s;
   float left_encoder_tick_per_sec_for_pid = left_encoder_tick_per_sec;
+  float right_encoder_tick_per_sec = (float)(right_encoder_tick_diff) / dt_s;
+  float right_encoder_tick_per_sec_for_pid = right_encoder_tick_per_sec;
+
   if (left_encoder_tick_per_sec_for_pid < 0.0)
   {
-    left_encoder_tick_per_sec_for_pid  *= -1;
+    left_encoder_tick_per_sec_for_pid *= -1;
+  }
+
+  if (right_encoder_tick_per_sec_for_pid < 0.0)
+  {
+    right_encoder_tick_per_sec_for_pid *= -1;
   }
   controller_left.setProcessValue(left_encoder_tick_per_sec_for_pid);
-
+  controller_right.setProcessValue(right_encoder_tick_per_sec_for_pid);
 
   // Update Set Value
   if (xQueueReceive(motor_commands_queue, &(motor_commands_received_values), (TickType_t)1) == pdPASS)
   {
-
     if (motor_commands_received_values[0] < 0)
     {
       left_motor_direction = 1;
       motor_commands_received_values[0] *= -1;
     }
-    else if(motor_commands_received_values[0] > 0){
+    else if (motor_commands_received_values[0] > 0)
+    {
       left_motor_direction = 0;
     }
 
+    if (motor_commands_received_values[1] < 0)
+    {
+      right_motor_direction = 1;
+      motor_commands_received_values[1] *= -1;
+    }
+    else if (motor_commands_received_values[1] > 0)
+    {
+      right_motor_direction = 0;
+    }
+
     controller_left.setSetPoint(motor_commands_received_values[0]);
+    controller_right.setSetPoint(motor_commands_received_values[1]);
   }
 
-  // controller_R.setProcessValue( process_value_R );
   digitalWrite(LEFT_MOTOR_DIR, left_motor_direction);
+  digitalWrite(RIGHT_MOTOR_DIR, left_motor_direction);
 
   float left_computed_value = controller_left.compute();
+  float right_computed_value = controller_right.compute();
   digitalWrite(2, !digitalRead(2));
 
   ledcWrite(LEFT_MOTOR_PWM_CHANNEL, left_computed_value * 4095);
-
-  // Serial.printf("LEFT : measuerement: %05d, left_computed_value: %.6f, dir: %05d, setpoint: %.6f\n",
-  //               left_encoder_tick_diff, left_computed_value, left_motor_direction, motor_commands_received_values[0]);
-  // Serial.printf("RIGHT: measuerement: %d, process: %f, dir: %d, setpoint: %d\n", right_encoder_tick_diff,
-  //               left_process_value, digitalRead(RIGHT_MOTOR_DIR), motor_commands_received_values[1]);
+  ledcWrite(RIGHT_MOTOR_PWM_CHANNEL, right_computed_value * 4095);
 
   last_left_encoder_ticks = left_encoder_ticks;
   last_right_encoder_ticks = right_encoder_ticks;
@@ -268,10 +283,6 @@ void loop()
   for (;;)
   {
     vTaskDelayUntil(&main_last_time_wake, main_loop_period);
-
-    // motor_commands[0] = 600.08;
-    // motor_commands[1] = -500.08;
-    // xQueueSend(motor_commands_queue, (void*)motor_commands, (TickType_t)1);
 
     switch (microros_agent_state)
     {
